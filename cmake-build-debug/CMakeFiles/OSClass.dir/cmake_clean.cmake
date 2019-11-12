@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/OSClass.dir/main.c.obj"
+  "CMakeFiles/OSClass.dir/Ex1/os.c.obj"
   "OSClass.exe"
   "OSClass.exe.manifest"
   "OSClass.pdb"

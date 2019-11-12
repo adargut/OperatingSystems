@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Adar/CLionProjects/OSClass/Ex1/os.c
+assert.h
+-
+stdlib.h
+-
+stdio.h
+-
+err.h
+-
+sys/mman.h
+-
+os.h
+C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
+
+C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
+stdint.h
+-
+

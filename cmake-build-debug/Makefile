@@ -122,32 +122,32 @@ OSClass/fast:
 	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/build
 .PHONY : OSClass/fast
 
-main.obj: main.c.obj
+Ex1/os.obj: Ex1/os.c.obj
 
-.PHONY : main.obj
+.PHONY : Ex1/os.obj
 
 # target to build an object file
-main.c.obj:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/main.c.obj
-.PHONY : main.c.obj
+Ex1/os.c.obj:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/os.c.obj
+.PHONY : Ex1/os.c.obj
 
-main.i: main.c.i
+Ex1/os.i: Ex1/os.c.i
 
-.PHONY : main.i
+.PHONY : Ex1/os.i
 
 # target to preprocess a source file
-main.c.i:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/main.c.i
-.PHONY : main.c.i
+Ex1/os.c.i:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/os.c.i
+.PHONY : Ex1/os.c.i
 
-main.s: main.c.s
+Ex1/os.s: Ex1/os.c.s
 
-.PHONY : main.s
+.PHONY : Ex1/os.s
 
 # target to generate assembly for a file
-main.c.s:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/main.c.s
-.PHONY : main.c.s
+Ex1/os.c.s:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/os.c.s
+.PHONY : Ex1/os.c.s
 
 # Help Target
 help:
@@ -158,9 +158,9 @@ help:
 	@echo ... OSClass
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... main.obj
-	@echo ... main.i
-	@echo ... main.s
+	@echo ... Ex1/os.obj
+	@echo ... Ex1/os.i
+	@echo ... Ex1/os.s
 .PHONY : help
 
 

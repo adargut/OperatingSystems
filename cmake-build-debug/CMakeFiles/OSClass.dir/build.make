@@ -56,27 +56,27 @@ include CMakeFiles/OSClass.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/OSClass.dir/flags.make
 
-CMakeFiles/OSClass.dir/main.c.obj: CMakeFiles/OSClass.dir/flags.make
-CMakeFiles/OSClass.dir/main.c.obj: ../main.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Adar\CLionProjects\OSClass\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/OSClass.dir/main.c.obj"
-	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\OSClass.dir\main.c.obj   -c C:\Users\Adar\CLionProjects\OSClass\main.c
+CMakeFiles/OSClass.dir/Ex1/os.c.obj: CMakeFiles/OSClass.dir/flags.make
+CMakeFiles/OSClass.dir/Ex1/os.c.obj: ../Ex1/os.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Adar\CLionProjects\OSClass\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/OSClass.dir/Ex1/os.c.obj"
+	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\OSClass.dir\Ex1\os.c.obj   -c C:\Users\Adar\CLionProjects\OSClass\Ex1\os.c
 
-CMakeFiles/OSClass.dir/main.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/OSClass.dir/main.c.i"
-	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\Adar\CLionProjects\OSClass\main.c > CMakeFiles\OSClass.dir\main.c.i
+CMakeFiles/OSClass.dir/Ex1/os.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/OSClass.dir/Ex1/os.c.i"
+	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\Adar\CLionProjects\OSClass\Ex1\os.c > CMakeFiles\OSClass.dir\Ex1\os.c.i
 
-CMakeFiles/OSClass.dir/main.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/OSClass.dir/main.c.s"
-	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\Adar\CLionProjects\OSClass\main.c -o CMakeFiles\OSClass.dir\main.c.s
+CMakeFiles/OSClass.dir/Ex1/os.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/OSClass.dir/Ex1/os.c.s"
+	C:\mingw\mingw64\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\Adar\CLionProjects\OSClass\Ex1\os.c -o CMakeFiles\OSClass.dir\Ex1\os.c.s
 
 # Object files for target OSClass
 OSClass_OBJECTS = \
-"CMakeFiles/OSClass.dir/main.c.obj"
+"CMakeFiles/OSClass.dir/Ex1/os.c.obj"
 
 # External object files for target OSClass
 OSClass_EXTERNAL_OBJECTS =
 
-OSClass.exe: CMakeFiles/OSClass.dir/main.c.obj
+OSClass.exe: CMakeFiles/OSClass.dir/Ex1/os.c.obj
 OSClass.exe: CMakeFiles/OSClass.dir/build.make
 OSClass.exe: CMakeFiles/OSClass.dir/linklibs.rsp
 OSClass.exe: CMakeFiles/OSClass.dir/objects1.rsp
