@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
   "C:/Users/Adar/CLionProjects/OSClass/Ex1/os.c" "C:/Users/Adar/CLionProjects/OSClass/cmake-build-debug/CMakeFiles/OSClass.dir/Ex1/os.c.obj"
+  "C:/Users/Adar/CLionProjects/OSClass/Ex1/pt.c" "C:/Users/Adar/CLionProjects/OSClass/cmake-build-debug/CMakeFiles/OSClass.dir/Ex1/pt.c.obj"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

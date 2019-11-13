@@ -80,6 +80,12 @@
 		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h">
 			<Option target="OSClass"/>
 		</Unit>
+		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/pt.c">
+			<Option target="OSClass"/>
+		</Unit>
+		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/pt.h">
+			<Option target="OSClass"/>
+		</Unit>
 		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
