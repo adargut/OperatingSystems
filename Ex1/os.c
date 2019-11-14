@@ -37,8 +37,10 @@ uint64_t alloc_page_frame(void)
 
 void* phys_to_virt(uint64_t phys_addr)
 {
+    printf("pt is %lx\n", phys_addr);
     uint64_t ppn = phys_addr >> 12;
     uint64_t off = phys_addr & 0xfff;
+    printf("ppn is %lx and offset is %lx\n", ppn, off);
     void* va = NULL;
 
     if (ppn < NPAGES)
@@ -50,12 +52,16 @@ void* phys_to_virt(uint64_t phys_addr)
 int main(int argc, char **argv)
 {
     uint64_t pt = alloc_page_frame();
+    uint64_t pt2 = alloc_page_frame();
 
-    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
-    page_table_update(pt, 0xcafe, 0xf00d);
-    assert(page_table_query(pt, 0xcafe) == 0xf00d);
-    page_table_update(pt, 0xcafe, NO_MAPPING);
-    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+    page_table_query(pt, 0xcafe);
+//
+//    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+//    page_table_update(pt, 0xcafe, 0xf00d);
+//    assert(page_table_query(pt, 0xcafe) == 0xf00d);
+//    page_table_update(pt, 0xcafe, NO_MAPPING);
+//    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+
 
     return 0;
 }
