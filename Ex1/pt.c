@@ -1,6 +1,4 @@
-struct pt_node 
-{
-	uint64_t *children;
-	uint64_t key;
-	uint64_t value;
-}
+//
+// Created by adargut on 11/13/19.
+//
+
