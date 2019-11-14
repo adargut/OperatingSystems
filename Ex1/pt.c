@@ -3,6 +3,7 @@
 #include "stdbool.h"
 #include "stdlib.h"
 #include "inttypes.h"
+#include "string.h"
 
 // Define a node in a trie
 typedef struct trie_node
@@ -23,7 +24,49 @@ typedef struct base_list
 
 static BaseList *root_list;
 
-// Util function to convert Hex address to binary
+// Util function to reverse string
+char *strrev(char *str){
+    char c, *front, *back;
+
+    if(!str || !*str)
+        return str;
+    for(front=str,back=str+strlen(str)-1;front < back;front++,back--){
+        c=*front;*front=*back;*back=c;
+    }
+    return str;
+}
+
+// Util function to convert decimal to binary
+char *decToBinary(long n)
+{
+    long decimal, tempDecimal;
+    char *binary = malloc(65);
+    int index = 0;
+
+    decimal = n;
+
+
+    /* Copies decimal value to temp variable */
+    tempDecimal = decimal;
+
+    while(tempDecimal!=0)
+    {
+        /* Finds decimal%2 and adds to the binary value */
+        binary[index] = (tempDecimal % 2) + '0';
+
+        tempDecimal /= 2;
+        index++;
+    }
+    binary[index] = '\0';
+
+    /* Reverse the binary value found */
+    strrev(binary);
+
+    printf("\nDecimal value = %ld\n", decimal);
+    printf("Binary value of decimal = %s\n", binary);
+
+    return binary;
+}
 
 
 // Util function to fetch root address from list of roots
@@ -57,9 +100,28 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn) {
 // Query a vpn from page table: return ppn if exists, NO_MAPPING else
 uint64_t page_table_query(uint64_t pt, uint64_t vpn)
 {
-    char vpn_buff[20];
-    sprintf(vpn_buff, "%" PRIu64, vpn);
-    printf("got bin vpn %s\n", vpn_buff);
-//    HexToBin((char *)vpn);
-//    printf("got vpn %lx\n", vpn);
+    char vpn_buff[45], *ptr;
+    int i = 0;
+//    sprintf(vpn_buff, "%" PRIu64, vpn);
+//    printf("got bin vpn %s\n", vpn_buff);
+//    uint64_t x = strtol(vpn_buff, &ptr, 10);
+//    printf("x is now %lx\n", x);
+    ptr = decToBinary(vpn);
+    printf("res is %s\n", ptr);
+    printf("length of res is %d\n", strlen(ptr));
+    while (i <= 44) {
+        vpn_buff[i++] = '0';
+    }
+    vpn_buff[45] = '\0';
+    vpn_buff[0] = '0';
+    printf("vpn buff is %s\n", vpn_buff);
+    printf("vpn[0] is %c\n", vpn_buff[0]);
+    int start_idx = strlen(vpn_buff) - strlen(ptr);
+    printf("start from %d\n", start_idx);
+    int j = 0;
+    for (int i = start_idx; i < 45; i++) {
+        printf("hey, ptr is %d\n", ptr[j]);
+        vpn_buff[i] = ptr[j];
+        j++;
+    }
 }
