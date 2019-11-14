@@ -6,21 +6,19 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.c
-assert.h
--
-stdlib.h
--
-stdio.h
--
-err.h
--
-sys/mman.h
--
-os.h
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
-
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
+/home/adargut/Desktop/OS/OSClass/Ex1/os.h
 stdint.h
 -
+
+/home/adargut/Desktop/OS/OSClass/Ex1/pt.c
+os.h
+/home/adargut/Desktop/OS/OSClass/Ex1/os.h
+stdio.h
+/home/adargut/Desktop/OS/OSClass/Ex1/stdio.h
+stdbool.h
+/home/adargut/Desktop/OS/OSClass/Ex1/stdbool.h
+stdlib.h
+/home/adargut/Desktop/OS/OSClass/Ex1/stdlib.h
+inttypes.h
+/home/adargut/Desktop/OS/OSClass/Ex1/inttypes.h
 

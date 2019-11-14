@@ -1,3 +1,1 @@
-"C:\Program Files\JetBrains\CLion 2018.3.4\bin\cmake\win\bin\cmake.exe" -E remove -f CMakeFiles\OSClass.dir/objects.a
-C:\mingw\mingw64\bin\ar.exe cr CMakeFiles\OSClass.dir/objects.a @CMakeFiles\OSClass.dir\objects1.rsp
-C:\mingw\mingw64\bin\gcc.exe -g   -Wl,--whole-archive CMakeFiles\OSClass.dir/objects.a -Wl,--no-whole-archive  -o OSClass.exe -Wl,--out-implib,libOSClass.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\OSClass.dir\linklibs.rsp
+/usr/bin/cc -g   CMakeFiles/OSClass.dir/Ex1/os.c.o CMakeFiles/OSClass.dir/Ex1/pt.c.o  -o OSClass 

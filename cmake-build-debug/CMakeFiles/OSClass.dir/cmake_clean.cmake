@@ -1,10 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/OSClass.dir/Ex1/os.c.obj"
-  "CMakeFiles/OSClass.dir/Ex1/pt.c.obj"
-  "OSClass.exe"
-  "OSClass.exe.manifest"
+  "CMakeFiles/OSClass.dir/Ex1/os.c.o"
+  "CMakeFiles/OSClass.dir/Ex1/pt.c.o"
+  "OSClass"
   "OSClass.pdb"
-  "libOSClass.dll.a"
 )
 
 # Per-language clean rules from dependency scanning.
