@@ -7,50 +7,6 @@
 #include "limits.h"
 
 
-// Util function to reverse string
-char *strrev(char *str){
-    char c, *front, *back;
-
-    if(!str || !*str)
-        return str;
-    for(front=str,back=str+strlen(str)-1;front < back;front++,back--){
-        c=*front;*front=*back;*back=c;
-    }
-    return str;
-}
-
-// Util function to convert decimal to binary
-char *decToBinary(long n)
-{
-    long decimal, tempDecimal;
-    char *binary = malloc(65);
-    int index = 0;
-
-    decimal = n;
-
-
-    /* Copies decimal value to temp variable */
-    tempDecimal = decimal;
-
-    while(tempDecimal!=0)
-    {
-        /* Finds decimal%2 and adds to the binary value */
-        binary[index] = (tempDecimal % 2) + '0';
-
-        tempDecimal /= 2;
-        index++;
-    }
-    binary[index] = '\0';
-
-    /* Reverse the binary value found */
-    strrev(binary);
-
-    printf("\nDecimal value = %ld\n", decimal);
-    printf("Binary value of decimal = %s\n", binary);
-
-    return binary;
-}
-
 void print_bin(uint64_t integer)
 {
     int i = CHAR_BIT * sizeof (uint64_t); /* however many bits are in an integer */
@@ -59,39 +15,61 @@ void print_bin(uint64_t integer)
     }
 }
 
-// Create or destroy a mapping in the page table
-void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn) {
-//    void *base = pto_virt(pt);
-    printf("at base");
+void createOffsets(uint64_t vpn, uint64_t *offsets) {
+    offsets[0] = (vpn >> 36) & 0x1ff;
+    offsets[1] = (vpn >> 27) & 0x1ff;
+    offsets[2] = (vpn >> 18) & 0x1ff;
+    offsets[3] = (vpn >> 9) & 0x1ff;
+    offsets[4] = (vpn) & 0x1ff;
 }
 
-/* Function to reverse bits of num */
-uint64_t reverseBits(uint64_t num)
+// Create or destroy a mapping in the page table
+void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
 {
-    unsigned int  NO_OF_BITS = sizeof(num) * 8;
-    uint64_t reverse_num = 0, i, temp;
+    int depth = 0;
+    uint64_t curr_node = pt;
 
-    for (i = 0; i < NO_OF_BITS; i++)
-    {
-        temp = (num & (1 << i));
-        if(temp)
-            reverse_num |= (1 << ((NO_OF_BITS - 1) - i));
+    uint64_t offsets[5], *node_data;
+    createOffsets(vpn, offsets);
+
+    while (depth < 5) {
+        printf("depth is now %d\n", depth);
+        curr_node = curr_node + offsets[depth++];
+        node_data = (uint64_t *)(phys_to_virt(curr_node));
+
+        curr_node = *node_data;
+        // Check out valid bit
+        if (node_data == NULL || 0 == (curr_node & 1)) {
+            curr_node = alloc_page_frame();
+        }
+        curr_node |= 1;
     }
 
-    return reverse_num;
+    // Set data for node as ppn
+     *node_data = ppn  | 1;
+    printf("node data is now %lx\n", *node_data);
 }
+
 
 // Query a vpn from page table: return ppn if exists, NO_MAPPING else
 uint64_t page_table_query(uint64_t pt, uint64_t vpn)
 {
-    uint64_t mask = 0b0000000000000000000111111111000000000000000000000000000000000000;
-    print_bin(mask);
-    printf("\n");
     int depth = 0;
-    uint64_t *node_ptr = (uint64_t *)phys_to_virt(pt);
+    uint64_t curr_node = pt;
 
-    while (++depth < 5) {
-        uint64_t page_offset = mask & vpn;
+    uint64_t offsets[5];
+    createOffsets(vpn, offsets);
 
+    while (depth < 5) {
+        curr_node = curr_node + offsets[depth++];
+        uint64_t *node_data = (uint64_t *)(phys_to_virt(curr_node));
+
+        curr_node = *node_data;
+        // Check out valid bit
+        if (0 == (curr_node & 1)) {
+            printf("in here \n");
+            return NO_MAPPING;
+        }
     }
+    return curr_node;
 }
