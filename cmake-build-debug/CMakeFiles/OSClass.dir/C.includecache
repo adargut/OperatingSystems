@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/home/adargut/Desktop/OS/OSClass/Ex1/os.c
+assert.h
+-
+stdlib.h
+-
+stdio.h
+-
+err.h
+-
+sys/mman.h
+-
+os.h
+/home/adargut/Desktop/OS/OSClass/Ex1/os.h
+
 /home/adargut/Desktop/OS/OSClass/Ex1/os.h
 stdint.h
 -
@@ -23,4 +37,6 @@ inttypes.h
 /home/adargut/Desktop/OS/OSClass/Ex1/inttypes.h
 string.h
 /home/adargut/Desktop/OS/OSClass/Ex1/string.h
+limits.h
+/home/adargut/Desktop/OS/OSClass/Ex1/limits.h
 
