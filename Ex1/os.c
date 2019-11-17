@@ -52,12 +52,19 @@ int main(int argc, char **argv)
     uint64_t pt = alloc_page_frame();
     assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
     page_table_update(pt, 0xcafe, 0xf00d);
-//    assert(page_table_query(pt, 0xcafe) == 0xf00d);
-//    page_table_update(pt, 0xcafe, NO_MAPPING);
-//    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
-    page_table_query(pt, 0xcafe);
+
+    assert(page_table_query(pt, 0xcafe) == 0xf00d);
     page_table_update(pt, 0xcafe, 0xf00a);
-    page_table_query(pt, 0xcafe);
+    assert(page_table_query(pt, 0xcafe) == 0xf00a);
+    page_table_update(pt, 0xcafe, 0xa01);
+    assert(page_table_query(pt, 0xcafe) == 0xa01);
+    page_table_update(pt, 0xcafe, NO_MAPPING);
+    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+    page_table_update(pt, 0xab, 0xaa);
+    page_table_update(pt, 0xab, 0xac);
+    assert(page_table_query(pt, 0xab) == 0xac);
+    page_table_update(pt, 0xab, NO_MAPPING);
+    assert(page_table_query(pt, 0xab) == NO_MAPPING);
 
     printf("finished tests\n");
 
