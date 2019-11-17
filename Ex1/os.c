@@ -50,16 +50,16 @@ void* phys_to_virt(uint64_t phys_addr)
 int main(int argc, char **argv)
 {
     uint64_t pt = alloc_page_frame();
-//    printf("pt is %lx\n",pt);
-//    printf("for pt vpn is %lx\n", phys_to_virt(pt));
-//    uint64_t *foo = phys_to_virt(pt);
-//    *foo = pt;
-//    printf("what resides there? %lx\n", *foo);
-//    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
     page_table_update(pt, 0xcafe, 0xf00d);
-    assert(page_table_query(pt, 0xcafe) == 0xf00d);
+//    assert(page_table_query(pt, 0xcafe) == 0xf00d);
 //    page_table_update(pt, 0xcafe, NO_MAPPING);
 //    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+    page_table_query(pt, 0xcafe);
+    page_table_update(pt, 0xcafe, 0xf00a);
+    page_table_query(pt, 0xcafe);
+
+    printf("finished tests\n");
 
 
     return 0;
