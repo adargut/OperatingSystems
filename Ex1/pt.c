@@ -27,27 +27,40 @@ void createOffsets(uint64_t vpn, uint64_t *offsets) {
 void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
 {
     int depth = 0;
+    uint64_t *node_pos = NULL;
     uint64_t curr_node = pt;
 
-    uint64_t offsets[5], *node_data;
+    uint64_t offsets[5], node_row;
     createOffsets(vpn, offsets);
 
     while (depth < 5) {
-        printf("depth is now %d\n", depth);
-        curr_node = curr_node + offsets[depth++];
-        node_data = (uint64_t *)(phys_to_virt(curr_node));
+        node_pos = (uint64_t *)phys_to_virt(curr_node); // Traverse to entry
+        node_row = node_pos[offsets[depth]]; // Move to relevant entry in page using 9 bits offset
+        printf("node row at depth %d is now %lx\n", depth, node_pos[offsets[depth]]);
 
-        curr_node = *node_data;
-        // Check out valid bit
-        if (node_data == NULL || 0 == (curr_node & 1)) {
-            curr_node = alloc_page_frame();
+        // Last level reached
+        if (depth == 4) {
+            // Format address correctly
+            ppn <<= 12;
+            ppn |= 1;
+            // Set row to formatted address and return
+            node_pos[offsets[depth]] = ppn;
+            return;
         }
-        curr_node |= 1;
-    }
 
-    // Set data for node as ppn
-     *node_data = ppn  | 1;
-    printf("node data is now %lx\n", *node_data);
+        // New frame needs to be allocated
+        if (0 == (node_row & 1)) {
+            uint64_t new_frame = alloc_page_frame();
+            new_frame <<= 12; // Shift frame to correct position
+            new_frame |= 1; // Set valid bit of frame to 1
+            node_pos[offsets[depth]] = new_frame; // Put new frame in the correct row
+            curr_node = new_frame; // Traverse to new frame
+        }
+        else {
+            curr_node = node_pos[offsets[depth]] >> 12; // Mapping exists, traverse to it
+        }
+        depth++;
+    }
 }
 
 
@@ -55,21 +68,29 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
 uint64_t page_table_query(uint64_t pt, uint64_t vpn)
 {
     int depth = 0;
+    uint64_t *node_pos = NULL;
     uint64_t curr_node = pt;
 
-    uint64_t offsets[5];
+    uint64_t offsets[5], node_row;
     createOffsets(vpn, offsets);
 
     while (depth < 5) {
-        curr_node = curr_node + offsets[depth++];
-        uint64_t *node_data = (uint64_t *)(phys_to_virt(curr_node));
+        printf("reached depth %d\n", depth);
+        node_pos = (uint64_t  *)phys_to_virt(curr_node); // Traverse to entry
+        node_row = node_pos[offsets[depth]]; // Move to relevant entry in page using 9 bits offset
 
-        curr_node = *node_data;
-        // Check out valid bit
-        if (0 == (curr_node & 1)) {
-            printf("in here \n");
+        // No mapping exists
+        if (0 == (node_row & 1)) {
             return NO_MAPPING;
         }
+        // Reached end, mapping exists
+        else if (depth == 4) {
+            return node_pos[offsets[depth]] >> 12;
+        }
+        // Need to traverse further
+        else {
+            curr_node = node_pos[offsets[depth]];
+        }
+        depth++;
     }
-    return curr_node;
 }
