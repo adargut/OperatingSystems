@@ -1,3 +1,8 @@
+/********************************************//**
+ *  Adar Gutman, 316265065
+ *  OS Exercise 1, TAU
+ ***********************************************/
+
 #include "os.h"
 #include "string.h"
 #include "limits.h"
