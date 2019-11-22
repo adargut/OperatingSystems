@@ -71,7 +71,7 @@ uint64_t page_table_query(uint64_t pt, uint64_t vpn)
         // Last level reached
         if (depth == 4) {
             // Format address correctly
-            if (node_pos[offsets[depth]] != NO_MAPPING && node_pos[offsets[depth]] & 1 == 1) {
+            if (node_pos[offsets[depth]] != NO_MAPPING && (node_pos[offsets[depth]] & 1) == 1) {
                 return node_pos[offsets[depth]] >> 12;
             }
             else {
@@ -87,4 +87,5 @@ uint64_t page_table_query(uint64_t pt, uint64_t vpn)
         }
         depth++;
     }
+    return -1; // Unexpected error occurs, we return -1
 }
