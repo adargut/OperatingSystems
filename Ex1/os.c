@@ -9,6 +9,8 @@
 
 #include "os.h"
 
+#include "math.h"
+
 /* 2^20 pages ought to be enough for anybody */
 #define NPAGES	(1024*1024)
 
@@ -47,27 +49,44 @@ void* phys_to_virt(uint64_t phys_addr)
     return va;
 }
 
+uint64_t get_random_vpn() {
+    return rand() & 0x1FFFFFFFFFFF; // 45 bits
+}
+
+uint64_t get_random_ppn() {
+    return rand() & 0xFFFFFFFFFFFFF; // 13 'F's
+}
+
+void update_and_check(uint64_t pt, uint64_t vpn, uint64_t ppn) {
+    page_table_update(pt, vpn, ppn);
+    assert(page_table_query(pt, vpn) == ppn);
+}
+
+void perform_random_move(uint64_t pt) {
+    uint64_t vpn = get_random_vpn();
+    uint64_t ppn = get_random_ppn();
+
+    if (rand() % 10 < 3)
+        ppn = NO_MAPPING;
+
+    update_and_check(pt, vpn, ppn);
+}
+
 int main(int argc, char **argv)
 {
     uint64_t pt = alloc_page_frame();
+
     assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
     page_table_update(pt, 0xcafe, 0xf00d);
-
     assert(page_table_query(pt, 0xcafe) == 0xf00d);
-    page_table_update(pt, 0xcafe, 0xf00a);
-    assert(page_table_query(pt, 0xcafe) == 0xf00a);
-    page_table_update(pt, 0xcafe, 0xa01);
-    assert(page_table_query(pt, 0xcafe) == 0xa01);
-    page_table_update(pt, 0xcafe, NO_MAPPING);
-    assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
-    page_table_update(pt, 0xab, 0xaa);
-    page_table_update(pt, 0xab, 0xac);
-    assert(page_table_query(pt, 0xab) == 0xac);
-    page_table_update(pt, 0xab, NO_MAPPING);
-    assert(page_table_query(pt, 0xab) == NO_MAPPING);
+    page_table_update(pt, 0xcafe, 0xfaab);
+    assert(page_table_query(pt, 0xcafe) == 0xfaab);
 
-    printf("finished tests\n");
+    for (int i = 0; i < pow(2, 15); i++)
+        perform_random_move(pt);
 
+    printf("finished testing\n");
 
     return 0;
 }
+

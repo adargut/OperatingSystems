@@ -57,8 +57,6 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
 // Query a vpn from page table: return ppn if exists, NO_MAPPING else
 uint64_t page_table_query(uint64_t pt, uint64_t vpn)
 {
-    // If vpn is already mapped to ppn, we first need to remove the mapping
-
     int depth = 0;
     uint64_t *node_pos = NULL;
     uint64_t curr_node = pt;
