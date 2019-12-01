@@ -149,32 +149,32 @@ Ex1/os.c.s:
 	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/os.c.s
 .PHONY : Ex1/os.c.s
 
-Ex1/pt.obj: Ex1/pt.c.obj
+Ex2/shell.obj: Ex2/shell.c.obj
 
-.PHONY : Ex1/pt.obj
+.PHONY : Ex2/shell.obj
 
 # target to build an object file
-Ex1/pt.c.obj:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/pt.c.obj
-.PHONY : Ex1/pt.c.obj
+Ex2/shell.c.obj:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.obj
+.PHONY : Ex2/shell.c.obj
 
-Ex1/pt.i: Ex1/pt.c.i
+Ex2/shell.i: Ex2/shell.c.i
 
-.PHONY : Ex1/pt.i
+.PHONY : Ex2/shell.i
 
 # target to preprocess a source file
-Ex1/pt.c.i:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/pt.c.i
-.PHONY : Ex1/pt.c.i
+Ex2/shell.c.i:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.i
+.PHONY : Ex2/shell.c.i
 
-Ex1/pt.s: Ex1/pt.c.s
+Ex2/shell.s: Ex2/shell.c.s
 
-.PHONY : Ex1/pt.s
+.PHONY : Ex2/shell.s
 
 # target to generate assembly for a file
-Ex1/pt.c.s:
-	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex1/pt.c.s
-.PHONY : Ex1/pt.c.s
+Ex2/shell.c.s:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.s
+.PHONY : Ex2/shell.c.s
 
 # Help Target
 help:
@@ -188,9 +188,9 @@ help:
 	@echo ... Ex1/os.obj
 	@echo ... Ex1/os.i
 	@echo ... Ex1/os.s
-	@echo ... Ex1/pt.obj
-	@echo ... Ex1/pt.i
-	@echo ... Ex1/pt.s
+	@echo ... Ex2/shell.obj
+	@echo ... Ex2/shell.i
+	@echo ... Ex2/shell.s
 .PHONY : help
 
 

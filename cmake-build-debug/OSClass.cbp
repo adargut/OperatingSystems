@@ -80,10 +80,7 @@
 		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h">
 			<Option target="OSClass"/>
 		</Unit>
-		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/pt.c">
-			<Option target="OSClass"/>
-		</Unit>
-		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex1/pt.h">
+		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/Ex2/shell.c">
 			<Option target="OSClass"/>
 		</Unit>
 		<Unit filename="C:/Users/Adar/CLionProjects/OSClass/CMakeLists.txt">
