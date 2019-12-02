@@ -150,6 +150,7 @@ Ex1/os.c.s:
 	$(MAKE) -f CMakeFiles/OSClass.dir/build.make CMakeFiles/OSClass.dir/Ex1/os.c.s
 .PHONY : Ex1/os.c.s
 
+<<<<<<< HEAD
 Ex1/pt.o: Ex1/pt.c.o
 
 .PHONY : Ex1/pt.o
@@ -158,21 +159,38 @@ Ex1/pt.o: Ex1/pt.c.o
 Ex1/pt.c.o:
 	$(MAKE) -f CMakeFiles/OSClass.dir/build.make CMakeFiles/OSClass.dir/Ex1/pt.c.o
 .PHONY : Ex1/pt.c.o
+=======
+Ex2/shell.obj: Ex2/shell.c.obj
 
-Ex1/pt.i: Ex1/pt.c.i
+.PHONY : Ex2/shell.obj
 
-.PHONY : Ex1/pt.i
+# target to build an object file
+Ex2/shell.c.obj:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.obj
+.PHONY : Ex2/shell.c.obj
+>>>>>>> e08103e03c7f1755aa5d425b2450840f8b4c5032
+
+Ex2/shell.i: Ex2/shell.c.i
+
+.PHONY : Ex2/shell.i
 
 # target to preprocess a source file
+<<<<<<< HEAD
 Ex1/pt.c.i:
 	$(MAKE) -f CMakeFiles/OSClass.dir/build.make CMakeFiles/OSClass.dir/Ex1/pt.c.i
 .PHONY : Ex1/pt.c.i
+=======
+Ex2/shell.c.i:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.i
+.PHONY : Ex2/shell.c.i
+>>>>>>> e08103e03c7f1755aa5d425b2450840f8b4c5032
 
-Ex1/pt.s: Ex1/pt.c.s
+Ex2/shell.s: Ex2/shell.c.s
 
-.PHONY : Ex1/pt.s
+.PHONY : Ex2/shell.s
 
 # target to generate assembly for a file
+<<<<<<< HEAD
 Ex1/pt.c.s:
 	$(MAKE) -f CMakeFiles/OSClass.dir/build.make CMakeFiles/OSClass.dir/Ex1/pt.c.s
 .PHONY : Ex1/pt.c.s
@@ -192,6 +210,27 @@ help:
 	@echo "... Ex1/pt.o"
 	@echo "... Ex1/pt.i"
 	@echo "... Ex1/pt.s"
+=======
+Ex2/shell.c.s:
+	$(MAKE) -f CMakeFiles\OSClass.dir\build.make CMakeFiles/OSClass.dir/Ex2/shell.c.s
+.PHONY : Ex2/shell.c.s
+
+# Help Target
+help:
+	@echo The following are some of the valid targets for this Makefile:
+	@echo ... all (the default if no target is provided)
+	@echo ... clean
+	@echo ... depend
+	@echo ... OSClass
+	@echo ... edit_cache
+	@echo ... rebuild_cache
+	@echo ... Ex1/os.obj
+	@echo ... Ex1/os.i
+	@echo ... Ex1/os.s
+	@echo ... Ex2/shell.obj
+	@echo ... Ex2/shell.i
+	@echo ... Ex2/shell.s
+>>>>>>> e08103e03c7f1755aa5d425b2450840f8b4c5032
 .PHONY : help
 
 
