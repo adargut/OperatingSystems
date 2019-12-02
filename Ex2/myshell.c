@@ -18,6 +18,7 @@ void handle_sigint(sig) // Handle SIGINTS
 
 
 int prepare(void) { // Prepare signal handler
+
     curr_pid = getpid();
 
     signal(SIGINT, handle_sigint);
@@ -25,16 +26,18 @@ int prepare(void) { // Prepare signal handler
 }
 
 int finalize(void) {
+
     return 0;
 }
 
 
 int is_pipe(int count, char **arglist) { // Check if input command is pipe
+
     int i = 0;
+
     while (i++ < count-1) {
         if (strcmp(arglist[i], "|") == 0) return i;
     }
-
     return -1;
 }
 
