@@ -8,6 +8,10 @@
 #include <unistd.h> // for close
 #include <fcntl.h> // for open
 
+// Don't return a value and ignore compiler warning
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
 pid_t curr_pid;
 
 void handle_sigint(sig) // Handle SIGINTS
@@ -21,9 +25,10 @@ int prepare(void) { // Prepare signal handler
 
     curr_pid = getpid();
 
-    signal(SIGINT, handle_sigint);
+    signal(SIGINT,SIG_IGN);
     return 0;
 }
+
 
 int finalize(void) {
 
@@ -64,19 +69,19 @@ int process_arglist(int count, char **arglist) {
             }
         }
         else { // Parent process
-            signal(SIGINT, handle_sigint);
+            signal(SIGINT, SIG_IGN);
             // Minimize zombie children by waiting for them
             for (pid_t pid = waitpid(-1,NULL,WNOHANG);
-            pid != 0 && pid != -1;
-            pid = waitpid(-1,NULL,WNOHANG));
+                 pid != 0 && pid != -1;
+                 pid = waitpid(-1,NULL,WNOHANG));
         }
     }
     else if (-1 != is_pipe(count, arglist)) { // Pipe case
         int pipefd[2];
         int idx = is_pipe(count, arglist);
         arglist[idx] = NULL;
-
         valid = pipe(pipefd);
+
         if (-1 == valid) perror("Error occured while piping..\n");
 
         pid_t child_a, child_b;
@@ -115,28 +120,34 @@ int process_arglist(int count, char **arglist) {
                 }
             } else {
                 /* Parent Code */
+                close(pipefd[0]);
+                close(pipefd[1]);
                 int status;
                 while (-1 != wait(&status)); // wait for both children to read/write
-                close(pipefd[1]);
             }
         }
     }
     else { // Not pipe or & case
         int pid = fork();
+        signal(SIGINT,SIG_IGN);
 
         if (pid < 0) {
             perror("Error occured while forking..\n");
             exit(1);
         }
         else if (pid == 0) { // Child process
+            signal(SIGINT,SIG_DFL);
             valid = execvp(arglist[0], arglist);
             if (-1 == valid) {
                 perror("Execvp failed\n");
                 exit(1);
             }
         } else { // Parent process
+            signal(SIGINT, handle_sigint);
             int status;
             while (-1 != wait(&status));
         }
     }
 }
+
+#pragma GCC diagnostic pop
