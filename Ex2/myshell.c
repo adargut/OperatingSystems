@@ -95,6 +95,7 @@ int process_arglist(int count, char **arglist) {
         }
         if (child_a == 0) {
             /* Child A code */
+            signal(SIGINT, SIG_DFL);
             dup2(pipefd[0], 0);
             close(pipefd[1]);
             arglist += (idx + 1);
@@ -113,6 +114,7 @@ int process_arglist(int count, char **arglist) {
             }
             if (child_b == 0) {
                 /* Child B code */
+                signal(SIGINT, SIG_DFL);
                 dup2(pipefd[1], 1);
                 close(pipefd[0]);
                 valid = execvp(arglist[0], arglist);
@@ -122,10 +124,14 @@ int process_arglist(int count, char **arglist) {
                 }
             } else {
                 /* Parent Code */
+                signal(SIGINT, handle_sigint); // Parent process need not terminate upon sigint
                 close(pipefd[0]);
                 close(pipefd[1]);
-                int status;
-                while (-1 != wait(&status)); // Wait for both children to read/write
+                int *status = NULL;
+                // Wait for both children to read/write
+                waitpid(child_a, status, 0);
+                waitpid(child_b, status, 0);
+                signal(SIGINT, SIG_IGN); // Parent process need not terminate upon sigint
             }
         }
     }
