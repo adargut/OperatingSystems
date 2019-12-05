@@ -127,10 +127,10 @@ int process_arglist(int count, char **arglist) {
                 signal(SIGINT, handle_sigint); // Parent process need not terminate upon sigint
                 close(pipefd[0]);
                 close(pipefd[1]);
-                int *status = NULL;
+                int status = 0;
                 // Wait for both children to read/write
-                waitpid(child_a, status, 0);
-                waitpid(child_b, status, 0);
+                waitpid(child_a, &status, 0);
+                waitpid(child_b, &status, 0);
                 signal(SIGINT, SIG_IGN); // Parent process need not terminate upon sigint
             }
         }
