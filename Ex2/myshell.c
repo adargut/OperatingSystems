@@ -14,10 +14,12 @@
 
 pid_t curr_pid;
 
+// Custom handler for sigints
 void handle_sigint(sig) // Handle SIGINTS
         int sig;
 {
-    if (curr_pid!=getpid()) exit(1);
+    if (curr_pid!=getpid()) exit(1); // Exit for processes != shell process
+    signal(SIGINT, SIG_IGN); // Set to SIG_IGN for shell
 }
 
 
@@ -52,7 +54,7 @@ int process_arglist(int count, char **arglist) {
     int valid;
 
     if (strcmp(arglist[count-1], "&") == 0) { // & case, run child process in background
-        signal(SIGINT,SIG_IGN);
+        signal(SIGINT,SIG_IGN); // Allow shell to ignore sigints
         pid_t child_pid = fork();
 
         if (child_pid < 0) {
@@ -69,7 +71,7 @@ int process_arglist(int count, char **arglist) {
             }
         }
         else { // Parent process
-            signal(SIGINT, SIG_IGN);
+            signal(SIGINT, SIG_IGN); // Parent process needs to ignore sigints
             // Minimize zombie children by waiting for them
             for (pid_t pid = waitpid(-1,NULL,WNOHANG);
                  pid != 0 && pid != -1;
@@ -123,7 +125,7 @@ int process_arglist(int count, char **arglist) {
                 close(pipefd[0]);
                 close(pipefd[1]);
                 int status;
-                while (-1 != wait(&status)); // wait for both children to read/write
+                while (-1 != wait(&status)); // Wait for both children to read/write
             }
         }
     }
@@ -136,14 +138,14 @@ int process_arglist(int count, char **arglist) {
             exit(1);
         }
         else if (pid == 0) { // Child process
-            signal(SIGINT,SIG_DFL);
+            signal(SIGINT,SIG_DFL); // Foreground children must terminate upon sigint
             valid = execvp(arglist[0], arglist);
             if (-1 == valid) {
                 perror("Execvp failed\n");
                 exit(1);
             }
         } else { // Parent process
-            signal(SIGINT, handle_sigint);
+            signal(SIGINT, handle_sigint); // Parent process need not terminate upon sigint
             int status;
             while (-1 != wait(&status));
         }
