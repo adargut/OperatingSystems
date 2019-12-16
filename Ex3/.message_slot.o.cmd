@@ -827,6 +827,14 @@ deps_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.o := \
     $(wildcard include/config/x86/smap.h) \
   arch/x86/include/asm/extable.h \
   arch/x86/include/asm/uaccess_64.h \
+  include/linux/slab.h \
+    $(wildcard include/config/debug/slab.h) \
+    $(wildcard include/config/failslab.h) \
+    $(wildcard include/config/have/hardened/usercopy/allocator.h) \
+    $(wildcard include/config/slab.h) \
+    $(wildcard include/config/slub.h) \
+  include/linux/kasan.h \
+  /usr/lib/gcc/x86_64-linux-gnu/8/include/stdbool.h \
   /home/adargut/Desktop/OS/OSClass/Ex3/message_slot.h \
 
 /home/adargut/Desktop/OS/OSClass/Ex3/message_slot.o: $(deps_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.o)

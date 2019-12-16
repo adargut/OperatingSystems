@@ -16,7 +16,8 @@
 
 MODULE_LICENSE("GPL");
 
-//Our custom definitions of IOCTL operations
+//Our custom definitions of
+// L operations
 #include "chardev.h"
 
 struct chardev_info
