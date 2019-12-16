@@ -32,7 +32,7 @@ typedef struct message_slot
 } slot;
 
 // Number of devices files bounded by 256
-static slot *devices_files[256] = {NULL};
+static slot *devices_files[MAX_MINORS] = {NULL};
 
 // Find channel by channel id from slot
 static channel *find_channel(int channel_id, slot *the_slot) {
@@ -43,6 +43,22 @@ static channel *find_channel(int channel_id, slot *the_slot) {
         curr_channel = curr_channel->next_channel;
     }
     return NULL;
+}
+
+// Insert new channel to message slot
+static channel *insert_channel(int channel_id, slot *the_slot) {
+    channel *curr_channel = the_slot->channels;
+    while (NULL != curr_channel) {
+        // Traverse list of channels until we find an empty spot
+        curr_channel = curr_channel->next_channel;
+    }
+    curr_channel = kmalloc(sizeof(channel), GFP_KERNEL);
+    curr_channel->next_channel = NULL;
+    memset(&curr_channel->the_message[0], 0, sizeof(curr_channel->the_message));
+    curr_channel->msg_exists = false;
+    curr_channel->channel_id = channel_id;
+    curr_channel->msg_length = -1;
+    return curr_channel;
 }
 
 
@@ -130,3 +146,59 @@ static ssize_t device_read( struct file* file,
 }
 
 //---------------------------------------------------------------
+// Write a message to a channel
+static ssize_t device_write( struct file*       file,
+                             const char __user* buffer,
+                             size_t             length,
+                             loff_t*            offset)
+{
+    int channel_id, minor, i;
+    slot *slot;
+    channel *ch;
+    if (buffer == NULL || file == NULL){ // Check for errors
+        return -EINVAL;
+    }
+    channel_id = (int)file->private_data;
+    if (-100 == channel_id) {
+        return -EINVAL;
+    }
+    minor = iminor(file_inode(file));
+    slot = devices_files[minor];
+    if (NULL == slot) { // Slot not allocated yet
+        return -EFAULT;
+    }
+    // Search for channel in message slot
+    ch = find_channel(channel_id, slot);
+    if (NULL == ch) {
+        // Channel not allocated yet, insert it
+        ch = insert_channel(channel_id, slot);
+    }
+    if (ch->msg_exists) {
+        // Remove existing message
+        memset(&ch->the_message[0], 0, sizeof(ch->the_message));
+        ch->msg_length = -1;
+    }
+    i = 0;
+    // Write message to channel
+    while (i < length && i < MSG_LEN) {
+        get_user(ch->the_message[i], &buffer[i]);
+        i++;
+    }
+    ch->msg_length = i;
+    ch->msg_exists = true;
+    // Return number of bytes written
+    return i;
+}
+
+//==================== DEVICE SETUP =============================
+
+// This structure will hold the functions to be called
+// when a process does something to the device we created
+struct file_operations Fops =
+        {
+                .read           = device_read,
+                .write          = device_write,
+                .open           = device_open,
+//                .release        = device_release,
+                .owner          = THIS_MODULE,
+        };
