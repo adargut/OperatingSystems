@@ -61,10 +61,6 @@ static channel *insert_channel(int channel_id, slot *the_slot) {
     return curr_channel;
 }
 
-
-// Current channel we're using
-static int the_channel;
-
 //================== DEVICE FUNCTIONS ===========================
 static int device_open( struct inode* inode,
                         struct file*  file )
@@ -94,6 +90,9 @@ static long device_ioctl( struct   file* file,
                           unsigned long  ioctl_param )
 {
     // Check for errors
+    if (ioctl_command_id != _IOW(MAJOR_NUM, 0, unsigned int)) {
+        return -EINVAL;
+    }
     if (ioctl_param == 0 || file == NULL){
         return -EINVAL;
     }
@@ -115,7 +114,7 @@ static ssize_t device_read( struct file* file,
     if (buffer == NULL || file == NULL){ // Check for errors
         return -EINVAL;
     }
-    channel_id = (int)file->private_data;
+    channel_id = (uintptr_t)file->private_data;
     if (-100 == channel_id){ // No channel set yet
         return -EINVAL;
     }
@@ -158,7 +157,7 @@ static ssize_t device_write( struct file*       file,
     if (buffer == NULL || file == NULL){ // Check for errors
         return -EINVAL;
     }
-    channel_id = (int)file->private_data;
+    channel_id = (uintptr_t)file->private_data;
     if (-100 == channel_id) {
         return -EINVAL;
     }
@@ -199,6 +198,50 @@ struct file_operations Fops =
                 .read           = device_read,
                 .write          = device_write,
                 .open           = device_open,
-//                .release        = device_release,
                 .owner          = THIS_MODULE,
         };
+
+//---------------------------------------------------------------
+// Initialize the module - Register the character device
+static int __init simple_init(void)
+{
+    int rc;
+    // Register driver capabilities. Obtain major num
+    rc = register_chrdev( MAJOR_NUM, DEVICE_RANGE_NAME, &Fops );
+    // Negative values signify an error
+    if( rc < 0 )
+    {
+        printk( KERN_ERR "%s failed to register for  %d\n", DEVICE_FILE_NAME, MAJOR_NUM );
+        return rc;
+    }
+    printk(KERN_INFO "message_slot: registered major number %d\n", MAJOR_NUM);
+    return 0;
+}
+
+//---------------------------------------------------------------
+static void __exit simple_cleanup(void)
+{
+    channel *head;
+    channel *next;
+    int i = 0;
+    // Free memory allocated
+    for (; i < MAX_MINORS; i++) {
+        if (NULL != devices_files[i]) {
+            head = devices_files[i]->channels;
+            while (NULL != head) {
+                next = head->next_channel;
+                kfree(head);
+                head = next;
+            }
+            kfree(devices_files[i]);
+        }
+    }
+    // Unregister the char device
+    unregister_chrdev(MAJOR_NUM, DEVICE_RANGE_NAME);
+}
+
+//---------------------------------------------------------------
+module_init(simple_init);
+module_exit(simple_cleanup);
+
+//========================= END OF FILE =========================

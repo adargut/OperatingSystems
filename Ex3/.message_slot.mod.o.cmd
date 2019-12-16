@@ -3,6 +3,7 @@ cmd_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.mod.o := gcc -Wp,-MD,/home
 source_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.mod.o := /home/adargut/Desktop/OS/OSClass/Ex3/message_slot.mod.c
 
 deps_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.mod.o := \
+    $(wildcard include/config/module/unload.h) \
     $(wildcard include/config/retpoline.h) \
   include/linux/kconfig.h \
     $(wildcard include/config/cpu/big/endian.h) \
@@ -31,7 +32,6 @@ deps_/home/adargut/Desktop/OS/OSClass/Ex3/message_slot.mod.o := \
     $(wildcard include/config/tracing.h) \
     $(wildcard include/config/event/tracing.h) \
     $(wildcard include/config/ftrace/mcount/record.h) \
-    $(wildcard include/config/module/unload.h) \
     $(wildcard include/config/constructors.h) \
     $(wildcard include/config/function/error/injection.h) \
     $(wildcard include/config/strict/module/rwx.h) \
