@@ -3,7 +3,6 @@
 #undef MODULE
 #define MODULE
 
-
 #include <linux/kernel.h>   /* We're doing kernel work */
 #include <linux/module.h>   /* Specifically, a module */
 #include <linux/fs.h>       /* for register_chrdev */
@@ -45,41 +44,23 @@ static channel *find_channel(int channel_id, slot *the_slot) {
     return NULL;
 }
 
-// Insert new channel to message slot
-static channel *insert_channel(int channel_id, slot *the_slot) {
-    channel *curr_channel = the_slot->channels;
-    while (NULL != curr_channel) {
-        // Traverse list of channels until we find an empty spot
-        curr_channel = curr_channel->next_channel;
-    }
-    curr_channel = kmalloc(sizeof(channel), GFP_KERNEL);
-    curr_channel->next_channel = NULL;
-    memset(&curr_channel->the_message[0], 0, sizeof(curr_channel->the_message));
-    curr_channel->msg_exists = false;
-    curr_channel->channel_id = channel_id;
-    curr_channel->msg_length = -1;
-    return curr_channel;
-}
-
 //================== DEVICE FUNCTIONS ===========================
 static int device_open( struct inode* inode,
                         struct file*  file )
 {
     slot *open_slot;
-    // Minor number is computed using inode
-    int minor_num = iminor(inode);
     // Check if minor number exists in array of minors
-    if (NULL == devices_files[minor_num]) {
+    if (NULL == devices_files[iminor(inode)]) {
         // No channel was set yet, start as -100
         file->private_data = (void *)-100;
         // Minor does not exist in array, need to allocate
         open_slot = kmalloc(sizeof(struct message_slot), GFP_KERNEL);
         // Set its minor number to minor we have
-        open_slot->minor_num = minor_num;
+        open_slot->minor_num = iminor(inode);
         // Its channels start out as null
         open_slot->channels = NULL;
         // Place the new slot in the array of slots
-        devices_files[minor_num] = open_slot;
+        devices_files[iminor(inode)] = open_slot;
     }
     return SUCCESS;
 }
@@ -90,10 +71,7 @@ static long device_ioctl( struct   file* file,
                           unsigned long  ioctl_param )
 {
     // Check for errors
-    if (ioctl_command_id != MSG_SLOT_CHANNEL) {
-        return -EINVAL;
-    }
-    if (ioctl_param == 0 || file == NULL){
+    if (0 == ioctl_param || NULL == file || ioctl_command_id != MSG_SLOT_CHANNEL){
         return -EINVAL;
     }
     // Set channel id to ioctl parameter
@@ -109,7 +87,7 @@ static ssize_t device_read( struct file* file,
                             loff_t*      offset )
 {
     int channel_id, minor, i;
-    slot *slot;
+    slot *curr_slot;
     struct message_channel *ch;
     if (buffer == NULL || file == NULL){ // Check for errors
         return -EINVAL;
@@ -119,12 +97,12 @@ static ssize_t device_read( struct file* file,
         return -EINVAL;
     }
     minor = iminor(file_inode(file));
-    slot = devices_files[minor];
-    if(NULL == slot) { // Slot not allocated yet in array
+    curr_slot = devices_files[minor];
+    if(NULL == curr_slot) { // Slot not allocated yet in array
         return -EFAULT;
     }
     // Search for channel in message slot
-    ch = find_channel(channel_id, slot);
+    ch = find_channel(channel_id, curr_slot);
     if (NULL == ch){ // Channel not allocated yet in slot
         return -EFAULT;
     }
@@ -151,18 +129,18 @@ static ssize_t device_write( struct file*       file,
                              size_t             length,
                              loff_t*            offset)
 {
-    int channel_id, minor, i;
-    slot *slot;
+    int channel_id, i;
     channel *ch;
-    if (buffer == NULL || file == NULL){ // Check for errors
+    slot *slot;
+    // Check for errors
+    if (buffer == NULL || file == NULL){
         return -EINVAL;
     }
     channel_id = (uintptr_t)file->private_data;
     if (-100 == channel_id) {
         return -EINVAL;
     }
-    minor = iminor(file_inode(file));
-    slot = devices_files[minor];
+    slot = devices_files[iminor(file_inode(file))];
     if (NULL == slot) { // Slot not allocated yet
         return -EFAULT;
     }
@@ -170,21 +148,29 @@ static ssize_t device_write( struct file*       file,
     ch = find_channel(channel_id, slot);
     if (NULL == ch) {
         // Channel not allocated yet, insert it
-        ch = insert_channel(channel_id, slot);
+        ch = kmalloc(sizeof(channel), GFP_KERNEL);
+        ch->channel_id = channel_id;
+        ch->msg_length = -100;
+        ch->msg_exists = false;
+        ch->next_channel = slot->channels;
+        slot->channels = ch;
     }
     if (ch->msg_exists) {
         // Remove existing message
         memset(&ch->the_message[0], 0, sizeof(ch->the_message));
-        ch->msg_length = -1;
+        ch->msg_length = -100;
     }
     i = 0;
     // Write message to channel
     while (i < length && i < MSG_LEN) {
-        get_user(ch->the_message[i], &buffer[i]);
+        // Check for error while writing message
+        if (get_user(ch->the_message[i], &buffer[i])){
+            return -EFAULT;
+        }
         i++;
     }
-    ch->msg_length = i;
     ch->msg_exists = true;
+    ch->msg_length = length;
     // Return number of bytes written
     return i;
 }
@@ -195,6 +181,7 @@ static ssize_t device_write( struct file*       file,
 // when a process does something to the device we created
 struct file_operations Fops =
         {
+                .unlocked_ioctl = device_ioctl,
                 .read           = device_read,
                 .write          = device_write,
                 .open           = device_open,
@@ -205,16 +192,15 @@ struct file_operations Fops =
 // Initialize the module - Register the character device
 static int __init simple_init(void)
 {
-    int major;
-    // Register driver capabilities. Obtain major num
-    major = register_chrdev( MAJOR_NUM, DEVICE_RANGE_NAME, &Fops );
-    // Negative values signify an error
-    if( major < 0 )
+    // Register the driver
+    int rc = register_chrdev( MAJOR_NUM, DEVICE_RANGE_NAME, &Fops );
+    // Check for errors
+    if( rc < 0 )
     {
         printk( KERN_ERR "%s failed to register for  %d\n", DEVICE_FILE_NAME, MAJOR_NUM );
         return rc;
     }
-    printk(KERN_INFO "message_slot: registered major number %d\n", major);
+    printk(KERN_INFO "message_slot: registered major number %d\n", MAJOR_NUM);
     return 0;
 }
 
@@ -243,5 +229,4 @@ static void __exit simple_cleanup(void)
 //---------------------------------------------------------------
 module_init(simple_init);
 module_exit(simple_cleanup);
-
 //========================= END OF FILE =========================
