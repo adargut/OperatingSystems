@@ -90,7 +90,7 @@ static long device_ioctl( struct   file* file,
                           unsigned long  ioctl_param )
 {
     // Check for errors
-    if (ioctl_command_id != _IOW(MAJOR_NUM, 0, unsigned int)) {
+    if (ioctl_command_id != MSG_SLOT_CHANNEL) {
         return -EINVAL;
     }
     if (ioctl_param == 0 || file == NULL){
@@ -205,16 +205,16 @@ struct file_operations Fops =
 // Initialize the module - Register the character device
 static int __init simple_init(void)
 {
-    int rc;
+    int major;
     // Register driver capabilities. Obtain major num
-    rc = register_chrdev( MAJOR_NUM, DEVICE_RANGE_NAME, &Fops );
+    major = register_chrdev( MAJOR_NUM, DEVICE_RANGE_NAME, &Fops );
     // Negative values signify an error
-    if( rc < 0 )
+    if( major < 0 )
     {
         printk( KERN_ERR "%s failed to register for  %d\n", DEVICE_FILE_NAME, MAJOR_NUM );
         return rc;
     }
-    printk(KERN_INFO "message_slot: registered major number %d\n", MAJOR_NUM);
+    printk(KERN_INFO "message_slot: registered major number %d\n", major);
     return 0;
 }
 

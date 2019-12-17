@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     int bytes_read = read(file, buffer, MSG_LEN);
 
     // Set channel id to target id
-    ioctl(file, _IOW(MAJOR_NUM, 0, unsigned int), target_id);
+    ioctl(file, MSG_SLOT_CHANNEL, target_id);
     // Check if any bytes were read
     if (bytes_read < 0) {
         printf("No message to read...\n");
