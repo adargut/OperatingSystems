@@ -98,7 +98,7 @@ static ssize_t device_read( struct file* file,
     }
     minor = iminor(file_inode(file));
     curr_slot = devices_files[minor];
-    if(NULL == curr_slot) { // Slot not allocated yet in array
+    if (NULL == curr_slot) { // Slot not allocated yet in array
         return -EFAULT;
     }
     // Search for channel in message slot
@@ -137,7 +137,7 @@ static ssize_t device_write( struct file*       file,
         return -EINVAL;
     }
     channel_id = (uintptr_t)file->private_data;
-    if (-100 == channel_id) {
+    if (-100 == channel_id) { // No channel set yet
         return -EINVAL;
     }
     slot = devices_files[iminor(file_inode(file))];
