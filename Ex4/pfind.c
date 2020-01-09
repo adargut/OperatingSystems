@@ -5,42 +5,34 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 
 #define          NUM_THREADS  5
-static long      TOTAL;
+#define          DT_DIR       4
 int              counter    = 0;
 pthread_mutex_t  lock;
 
 //====================================================
-int next_counter(void)
-{
-    pthread_mutex_lock( &lock );
-    int temp = ++counter;
-    pthread_mutex_unlock( &lock );
-    return temp;
-
-    //return __sync_fetch_and_add(&counter, 1);
-}
-
-//====================================================
 typedef struct Node_t {
-
-    struct dirent* dirEnt;
+    DIR* dir;
     struct Node_t* next;
 } Node;
 
 Node *createNode( const char *data ) {
 
-    Node *res  = malloc(sizeof(Node));
-    res->next  = NULL;
-    res->data  = data;
+    Node *res   = malloc(sizeof(Node));
+    res->next   = NULL;
+    res->dir    = opendir(data);
 
+    if (NULL == res->dir) {
+        printf("ERROR in opening directory\n");
+        exit(-1);
+    }
     return res;
 }
 
 typedef struct Queue {
-
     Node *head;
     Node *tail;
     int  size;
@@ -122,14 +114,69 @@ Node *dequeue ( Queue *queue ) {
 }
 
 //====================================================
-void concurrent_search(char *search_query, Queue *queue)
+bool match_query(char *search_query, char *filename)
 {
-    Node *head = dequeue(queue);
-    struct dirent x;
+    int query_len = strlen(search_query);
+    int file_len  = strlen(filename);
+    int streak    = 0;
+    int i         = 0;
+    int j         = 0;
+    int start_pos = 0;
 
-    while (NULL != curr_file = readdir(head->dirEnt)) {
-        if (DT_DIR != curr_file->d_type) {
-            printf("%s\n", curr_file->name);
+    if (query_len > file_len) return false;
+
+    while (i < file_len) {
+        if (search_query[j++] == filename[i++]) {
+            streak += 1;
+            if (streak == query_len) return true;
+        }
+        else {
+            streak = 0;
+            j      = 0;
+            i      = start_pos;
+            start_pos++;
+        }
+    }
+    return false;
+}
+
+typedef struct search_args {
+    Queue* queue_arg;
+    char*  search_arg;
+} Search_args;
+
+Search_args *create_search_args(Queue *queue, char *search_query) {
+
+    Search_args *search_args = malloc(sizeof(search_args));
+    search_args->queue_arg   = queue;
+    search_args->search_arg  = search_query;
+
+    return search_args;
+}
+
+//====================================================
+
+void concurrent_search(Search_args *search_args)
+{
+    char *search_query        = search_args->search_arg;
+    Queue *queue              = search_args->queue_arg;
+    Node* head                = dequeue(queue);
+    DIR*           curr_dir   = head->dir;
+    struct dirent* curr_entry = NULL;
+
+    while ((curr_entry = readdir(curr_dir)) != NULL) {
+        // .. or . found
+        if (strcmp(".", curr_entry->d_name) || strcmp("..", curr_entry->d_name)) {
+            continue;
+        }
+        // Directory found
+        if (DT_DIR == curr_entry->d_type) {
+            Node *new_entry = createNode(curr_entry->d_name);
+            enqueue(queue, new_entry);
+        }
+        // File found
+        else if (match_query(search_query, curr_entry->d_name)) {
+            printf("%s\n", curr_entry->d_name);
         }
     }
 }
@@ -137,27 +184,29 @@ void concurrent_search(char *search_query, Queue *queue)
 //====================================================
 int main (int argc, char *argv[])
 {
-    DIR*           root_dir;
-    struct dirent* dirEnt;
     char*          search_query;
     int            num_threads;
     int            rc;
     long           t;
     void*          status;
+    Node*          node;
 
     if (argc != 4)
     {
-        printf("ERROR in args count");
+        printf("ERROR in args count\n");
         exit(-1);
     }
 
-    // --- Initialize threads ----------------------------
-    num_threads = argv[3];
-    pthread_t thread[num_threads];
+    // --- Initialize queue ----------------------------
+    node                     = createNode(argv[1]);
+    Queue *queue             = createQueue();
+    search_query             = argv[2];
+    Search_args *search_args = create_search_args(queue, search_query);
+    enqueue(queue, node);
 
-    // --- Open root directory ----------------------------
-    root_dir     = opendir(argv[1]);
-    search_query = argv[2];
+    // --- Initialize threads ----------------------------
+    num_threads = atoi(argv[3]);
+    pthread_t thread[num_threads];
 
     // --- Initialize mutex ----------------------------
     rc = pthread_mutex_init( &lock, NULL );
@@ -175,7 +224,7 @@ int main (int argc, char *argv[])
         rc = pthread_create( &thread[t],
                              NULL,
                              concurrent_search,
-                             (void*) t);
+                             (void*) search_args);
         if (rc) {
             printf("ERROR in pthread_create():"
                    " %s\n", strerror(rc));
