@@ -169,7 +169,6 @@ void* concurrent_search(Search_args *search_args)
             pthread_mutex_unlock( &lock );
 
             while (curr_dir != NULL && (curr_entry = readdir(curr_dir)) != NULL) {
-                pthread_testcancel();
                 // .. or . found
                 if (!strcmp(".", curr_entry->d_name) || !strcmp("..", curr_entry->d_name)) {
                     continue;
