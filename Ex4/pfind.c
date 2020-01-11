@@ -13,18 +13,19 @@
 #include <sys/stat.h>
 
 
-static int          NUM_THREADS;
-#define          DT_DIR       4
-#define         BUFFER_SIZE 500
-static int              counter    = 0;
-static int sleepy_threads=0;
+#define           DT_DIR           4
+#define           BUFFER_SIZE      500
+static int        counter        = 0;
+static int        sleepy_threads = 0;
+static int        NUM_THREADS;
 static pthread_t* threads;
-pthread_cond_t cond;
-pthread_mutex_t  lock;
-pthread_mutex_t  lock2;
+pthread_cond_t    cond;
+pthread_mutex_t   lock;
+pthread_mutex_t   lock2;
 
 //====================================================
-typedef struct Node_t {
+typedef struct Node_t
+{
     DIR* dir;
     char* father_dir;
     struct Node_t* next;
@@ -35,23 +36,24 @@ Node *createNode( const char *data, char *father ) {
     Node *res           = malloc(sizeof(Node));
     res->next           = NULL;
     res->father_dir     = father;
+    char *fn            = malloc(BUFFER_SIZE);
+
     if (strlen(father) > 0 && father[strlen(father + 1)] != '/') {
         strcat(father, "/");
     }
-    char *fn = malloc(BUFFER_SIZE);
     strcpy( fn, father );
     strcat( fn, data );
-    res->dir = opendir(fn);
     res->father_dir = fn;
 
-    if (NULL == res->dir) {
-        printf("ERROR in opening directory: %s\n", fn);
-        exit(-1);
+    if ((res->dir = opendir (fn)) == NULL) {
+        perror ("Cannot open directory");
     }
+
     return res;
 }
 
-typedef struct Queue {
+typedef struct Queue
+{
     Node *head;
     Node *tail;
     int  size;
@@ -59,7 +61,7 @@ typedef struct Queue {
 
 Queue *createQueue() {
 
-    Queue *queue = malloc(sizeof(Queue));    fflush(stdout);
+    Queue *queue = malloc(sizeof(Queue));
 
     queue->size  = 0;
     queue->head  = NULL;
@@ -136,11 +138,8 @@ Search_args *create_search_args(Queue *queue, char *search_query) {
     return search_args;
 }
 
-
-static Queue *queue;
-//====================================================
 // --- Directory util ----------------------------
-bool isDirectory( const char *path ) {//checks if directory 1: true 0: false
+bool isDirectory( const char *path ) {
     struct stat statbuf;
 
     if (stat(path, &statbuf) != 0)
@@ -148,24 +147,29 @@ bool isDirectory( const char *path ) {//checks if directory 1: true 0: false
     return S_ISDIR(statbuf.st_mode);
 }
 
-// --- Thread function ----------------------------
+static Queue *queue;
+
+//====================================================
 void* concurrent_search(Search_args *search_args)
 {
     char *search_query        = search_args->search_arg;
     Queue *queue              = search_args->queue_arg;
     Node* head                = NULL;
+    DIR* curr_dir             = NULL;
     char *full_path           = malloc(BUFFER_SIZE);
-    DIR* curr_dir;
     struct dirent* curr_entry;
 
     while(true) {
         while (!is_empty(queue)) {
             pthread_mutex_lock( &lock );
             head = dequeue(queue);
+            if (head != NULL) {
+                curr_dir = head->dir;
+            }
             pthread_mutex_unlock( &lock );
-            curr_dir = head->dir;
 
-            while ((curr_entry = readdir(curr_dir)) != NULL) {
+            while (curr_dir != NULL && (curr_entry = readdir(curr_dir)) != NULL) {
+                pthread_testcancel();
                 // .. or . found
                 if (!strcmp(".", curr_entry->d_name) || !strcmp("..", curr_entry->d_name)) {
                     continue;
@@ -176,7 +180,7 @@ void* concurrent_search(Search_args *search_args)
                 }
                 strcat(full_path, curr_entry->d_name);
                 // Directory found
-                if (DT_DIR == curr_entry->d_type) {
+                if (isDirectory(full_path)) {
                     Node *new_entry = createNode(curr_entry->d_name, head->father_dir);
                     pthread_mutex_lock( &lock );
                     enqueue(queue, new_entry);
@@ -186,28 +190,26 @@ void* concurrent_search(Search_args *search_args)
                 // File found
                 else if (match_query(search_query, curr_entry->d_name)) {
                     printf("%s\n", full_path);
+                    pthread_testcancel();
                     pthread_mutex_lock( &lock2 );
                     counter++;
                     pthread_mutex_unlock( &lock2 );
                 }
             }
+            closedir(curr_dir);
             pthread_testcancel();
         }
 
         pthread_mutex_lock( &lock );
         sleepy_threads++;
-        if(sleepy_threads == NUM_THREADS){ /*All n threads are sleeping*/
-            /*call another thread*/
+        if (sleepy_threads == NUM_THREADS){
             pthread_cond_signal(&cond);
-            /*exit current thread*/
             pthread_mutex_unlock( &lock );
             pthread_exit(0);
         }
-        /*Sleep until signal*/
-        pthread_cond_wait(&cond, &lock);
-        sleepy_threads--;
+        pthread_cond_wait( &cond, &lock );
         pthread_testcancel();
-
+        sleepy_threads--;
         pthread_mutex_unlock( &lock );
     }
 }
@@ -233,6 +235,8 @@ void handler(int sig)
         }
     }
     printf("Search stopped, found %d files\n", counter);
+    free(threads);
+    free(queue);
     exit(0);
 }
 
@@ -296,7 +300,7 @@ int main (int argc, char *argv[])
         rc = pthread_create( &threads[t],
                              NULL,
                              (void *)concurrent_search,
-                             (void*) search_args);
+                             (void *)search_args);
         if (rc) {
             printf("ERROR in pthread_create():"
                    " %s\n", strerror(rc));
@@ -323,6 +327,8 @@ int main (int argc, char *argv[])
     pthread_cond_destroy(&cond);
     free(threads);
     free(queue);
+    free(search_args->queue_arg);
+    free(search_args);
     pthread_exit(NULL);
 }
 //=================== END OF FILE ====================
