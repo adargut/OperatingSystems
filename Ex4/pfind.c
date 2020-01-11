@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <signal.h>
-
+#include <sys/stat.h>
 
 
 static int          NUM_THREADS;
@@ -21,6 +21,7 @@ static int sleepy_threads=0;
 static pthread_t* threads;
 pthread_cond_t cond;
 pthread_mutex_t  lock;
+pthread_mutex_t  lock2;
 
 //====================================================
 typedef struct Node_t {
@@ -29,13 +30,12 @@ typedef struct Node_t {
     struct Node_t* next;
 } Node;
 
-Node *createNode( const char *data, const char *father ) {
+Node *createNode( const char *data, char *father ) {
 
-    char *resolved_path = malloc(PATH_MAX);
     Node *res           = malloc(sizeof(Node));
     res->next           = NULL;
     res->father_dir     = father;
-    if (father != "") {
+    if (strlen(father) > 0 && father[strlen(father + 1)] != '/') {
         strcat(father, "/");
     }
     char *fn = malloc(BUFFER_SIZE);
@@ -59,7 +59,8 @@ typedef struct Queue {
 
 Queue *createQueue() {
 
-    Queue *queue = malloc(sizeof(Queue));
+    Queue *queue = malloc(sizeof(Queue));    fflush(stdout);
+
     queue->size  = 0;
     queue->head  = NULL;
     queue->tail  = NULL;
@@ -73,16 +74,6 @@ bool is_empty(Queue *queue) {
 
 void enqueue( Queue *queue, Node *element ) {
 
-    int rc;
-//    // --- Lock: enter CS -------------------------------------
-//    rc = pthread_mutex_lock(&lock);
-//    if( 0 != rc )
-//    {
-//        printf( "ERROR in pthread_mutex_lock(): "
-//                "%s\n", strerror( rc ) );
-//        exit( -1 );
-//    }
-
     queue->size++;
     if (queue->head == NULL) {
         queue->head = element;
@@ -92,43 +83,14 @@ void enqueue( Queue *queue, Node *element ) {
         queue->tail->next = element;
         queue->tail       = element;
     }
-
-    // --- Unlock: exit CS -------------------------------------
-//    rc = pthread_mutex_unlock(&lock);
-//    if( 0 != rc )
-//    {
-//        printf( "ERROR in pthread_mutex_unlock(): "
-//                "%s\n", strerror( rc ) );
-//        exit( -1 );
-//    }
 }
 
 Node *dequeue ( Queue *queue ) {
 
-    int rc;
-    // --- Lock: enter CS -------------------------------------
-//    rc = pthread_mutex_lock(&lock);
-//    if( 0 != rc )
-//    {
-//        printf( "ERROR in pthread_mutex_unlock(): "
-//                "%s\n", strerror( rc ) );
-//        exit( -1 );
-//    }
-//
     if (is_empty(queue)) return NULL;
     queue->size--;
     Node *res   = queue->head;
     queue->head = queue->head->next;
-
-    // --- Unlock: exit CS -------------------------------------
-//    rc = pthread_mutex_unlock(&lock);
-//    if( 0 != rc )
-//    {
-//        printf( "ERROR in pthread_mutex_unlock(): "
-//                "%s\n", strerror( rc ) );
-//        exit( -1 );
-//    }
-
 
     return res;
 }
@@ -177,22 +139,30 @@ Search_args *create_search_args(Queue *queue, char *search_query) {
 
 static Queue *queue;
 //====================================================
+// --- Directory util ----------------------------
+bool isDirectory( const char *path ) {//checks if directory 1: true 0: false
+    struct stat statbuf;
 
-void concurrent_search(Search_args *search_args)
+    if (stat(path, &statbuf) != 0)
+        return false;
+    return S_ISDIR(statbuf.st_mode);
+}
+
+// --- Thread function ----------------------------
+void* concurrent_search(Search_args *search_args)
 {
     char *search_query        = search_args->search_arg;
     Queue *queue              = search_args->queue_arg;
     Node* head                = NULL;
+    char *full_path           = malloc(BUFFER_SIZE);
     DIR* curr_dir;
     struct dirent* curr_entry;
 
     while(true) {
         while (!is_empty(queue)) {
-            while (head == NULL && !is_empty(queue)) {
-                pthread_mutex_lock( &lock );
-                head = dequeue(queue);
-                pthread_mutex_unlock( &lock );
-            }
+            pthread_mutex_lock( &lock );
+            head = dequeue(queue);
+            pthread_mutex_unlock( &lock );
             curr_dir = head->dir;
 
             while ((curr_entry = readdir(curr_dir)) != NULL) {
@@ -200,19 +170,25 @@ void concurrent_search(Search_args *search_args)
                 if (!strcmp(".", curr_entry->d_name) || !strcmp("..", curr_entry->d_name)) {
                     continue;
                 }
+                strcpy(full_path, head->father_dir);
+                if (full_path[strlen(full_path + 1)] != '/') {
+                    strcat(full_path, "/");
+                }
+                strcat(full_path, curr_entry->d_name);
                 // Directory found
                 if (DT_DIR == curr_entry->d_type) {
                     Node *new_entry = createNode(curr_entry->d_name, head->father_dir);
                     pthread_mutex_lock( &lock );
                     enqueue(queue, new_entry);
-                    pthread_cond_signal(&cond);
                     pthread_mutex_unlock( &lock );
+                    pthread_cond_signal(&cond);
                 }
                 // File found
                 else if (match_query(search_query, curr_entry->d_name)) {
-                    printf("%s\n", curr_entry->d_name);
-                    pid_t tid = syscall(SYS_gettid);
-                    printf("found from %d\n", tid);
+                    printf("%s\n", full_path);
+                    pthread_mutex_lock( &lock2 );
+                    counter++;
+                    pthread_mutex_unlock( &lock2 );
                 }
             }
             pthread_testcancel();
@@ -231,11 +207,12 @@ void concurrent_search(Search_args *search_args)
         pthread_cond_wait(&cond, &lock);
         sleepy_threads--;
         pthread_testcancel();
-        
+
         pthread_mutex_unlock( &lock );
     }
 }
 
+// --- Signal handler ----------------------------
 void handler(int sig)
 {
     int rc;
@@ -255,7 +232,7 @@ void handler(int sig)
             exit(1);
         }
     }
-    printf("Search stopped, found files.");
+    printf("Search stopped, found %d files\n", counter);
     exit(0);
 }
 
@@ -293,9 +270,16 @@ int main (int argc, char *argv[])
                "%s\n", strerror(rc));
         exit(-1);
     }
+    rc = pthread_mutex_init( &lock2, NULL );
+    if( rc )
+    {
+        printf("ERROR in pthread_mutex_init(): "
+               "%s\n", strerror(rc));
+        exit(-1);
+    }
 
     // --- Initialize cond ----------------------------
-    rc = pthread_cond_init (&cond, NULL);
+    rc = pthread_cond_init ( &cond, NULL );
     if( rc )
     {
         printf("ERROR in pthread_cond_init(): "
@@ -309,10 +293,9 @@ int main (int argc, char *argv[])
     // --- Launch threads ------------------------------
     for( t = 0; t < NUM_THREADS; ++t )
     {
-        printf("Main: creating thread %ld\n", t);
         rc = pthread_create( &threads[t],
                              NULL,
-                             concurrent_search,
+                             (void *)concurrent_search,
                              (void*) search_args);
         if (rc) {
             printf("ERROR in pthread_create():"
@@ -331,15 +314,12 @@ int main (int argc, char *argv[])
                    " %s\n", strerror(rc));
             exit( -1 );
         }
-        printf("Main: completed join with thread %ld "
-               "having a status of %ld\n",t,(long)status);
     }
 
     // --- Epilogue -------------------------------------
-    printf("Main: program completed. Exiting."
-           " Counter = %d\n",counter);
-
+    printf("Done searching, found %d files\n", counter);
     pthread_mutex_destroy(&lock);
+    pthread_mutex_destroy(&lock2);
     pthread_cond_destroy(&cond);
     free(threads);
     free(queue);
