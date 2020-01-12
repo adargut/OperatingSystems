@@ -45,10 +45,6 @@ Node *createNode( const char *data, char *father ) {
     strcat( fn, data );
     res->father_dir = fn;
 
-    if ((res->dir = opendir (fn)) == NULL) {
-        perror ("Cannot open directory");
-    }
-
     return res;
 }
 
@@ -163,10 +159,14 @@ void* concurrent_search(Search_args *search_args)
         while (!is_empty(queue)) {
             pthread_mutex_lock( &lock );
             head = dequeue(queue);
+            pthread_mutex_unlock( &lock );
+
             if (head != NULL) {
                 curr_dir = head->dir;
+                if ((curr_dir = opendir (head->father_dir)) == NULL) {
+                    perror ("Cannot open directory");
+                }
             }
-            pthread_mutex_unlock( &lock );
 
             while (curr_dir != NULL && (curr_entry = readdir(curr_dir)) != NULL) {
                 // .. or . found
@@ -195,7 +195,7 @@ void* concurrent_search(Search_args *search_args)
                     pthread_mutex_unlock( &lock2 );
                 }
             }
-            closedir(curr_dir);
+            if (curr_dir != NULL) closedir(curr_dir);
             pthread_testcancel();
         }
 
