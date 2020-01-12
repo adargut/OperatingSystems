@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <signal.h>
-#include <sys/stat.h>
 
 
 #define           DT_DIR           4
@@ -160,6 +159,7 @@ void* concurrent_search(Search_args *search_args)
             pthread_mutex_lock( &lock );
             head = dequeue(queue);
             pthread_mutex_unlock( &lock );
+            pthread_testcancel();
 
             if (head != NULL) {
                 curr_dir = head->dir;
@@ -189,7 +189,6 @@ void* concurrent_search(Search_args *search_args)
                 // File found
                 else if (match_query(search_query, curr_entry->d_name)) {
                     printf("%s\n", full_path);
-                    pthread_testcancel();
                     pthread_mutex_lock( &lock2 );
                     counter++;
                     pthread_mutex_unlock( &lock2 );
@@ -207,7 +206,6 @@ void* concurrent_search(Search_args *search_args)
             pthread_exit(0);
         }
         pthread_cond_wait( &cond, &lock );
-        pthread_testcancel();
         sleepy_threads--;
         pthread_mutex_unlock( &lock );
     }
