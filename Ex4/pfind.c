@@ -186,7 +186,7 @@ void* concurrent_search(Search_args *search_args)
                     pthread_mutex_unlock( &lock );
                     pthread_cond_signal(&cond);
                 }
-                // File found
+                    // File found
                 else if (match_query(search_query, curr_entry->d_name)) {
                     printf("%s\n", full_path);
                     pthread_mutex_lock( &lock2 );
