@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <sys/types.h>
-#include <sys/syscall.h>
 #include <signal.h>
 
 
