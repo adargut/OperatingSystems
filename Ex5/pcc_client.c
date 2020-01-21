@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <limits.h>
 
 off_t get_file_length(FILE *file)
 {
@@ -81,8 +82,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    printf("Client sending the message: %s\n", send_buff);
-
     // print socket details
     getsockname(sockfd,
                 (struct sockaddr *) &my_addr, &addrsize);
@@ -121,10 +120,15 @@ int main(int argc, char *argv[])
     bytes_sent = write(sockfd,
                        N_buff,
                        4);
+    char *query = malloc(CHAR_MAX);
+    int j = 0;
     while (fgets(send_buff, 1024, file) != NULL) {
-        printf(" %s ", send_buff);
+        printf("what is send buff? %s\n", send_buff);
+        for (int i = 0; i < strlen(send_buff); i++) {
+            query[j++] = send_buff[i];
+        }
     }
-    printf("client sending the mssage: %s\n", send_buff);
+    printf("client sending the mssage: %s\n", query);
     // Write message from client to server
     while (notwritten > 0)
     {
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
         // totalsent  = how much we've written so far
         // nsent = how much we've written in last write() call */
         bytes_sent = write(sockfd,
-                           send_buff + totalsent,
+                           query + totalsent,
                            notwritten);
         // check if error occured (client closed connection?)
         assert(bytes_sent >= 0);
