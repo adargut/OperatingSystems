@@ -29,7 +29,7 @@
 #define UNUSED(x)(void)(x)
 
 // Util
-        off_t get_file_length(FILE * file) {
+off_t get_file_length(FILE * file) {
     fpos_t position; // fpos_t may be a struct and store multibyte info
     off_t length; // off_t is integral type, perhaps long long
 

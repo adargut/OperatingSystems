@@ -26,7 +26,7 @@
 
 #include <sys/signal.h>
 
-#define BUFF_LEN 1024
+#define BUFF_LEN 65536
 #define RESP_LEN 256
 #define UNUSED(x)(void)(x)
 
