@@ -38,7 +38,7 @@ static unsigned int total_PCC[95] = {
 void handler(int sig) {
     while (1) {
         if (!busy) {
-            /*if server is not busy print the counters and exit with 0*/
+            // if server is not busy print the counters and exit with 0
             for (int i = 0; i < 95; i++) {
                 char c = i + 32;
                 printf("char '%c' : %u times\n", c, total_PCC[i]);
@@ -51,17 +51,21 @@ int main(int argc, char * argv[]) {
     int nread = -1;
     int listenfd = -1;
     int connfd = -1;
+    int serv_resp[RESP_LEN];
 
     struct sockaddr_in serv_addr;
     struct sockaddr_in my_addr;
     struct sockaddr_in peer_addr;
+
     UNUSED(peer_addr);
     UNUSED(my_addr);
+
     socklen_t addrsize = sizeof(struct sockaddr_in);
 
     char data_buff[BUFF_LEN];
+
     uint32_t N_buff[1];
-    int serv_resp[RESP_LEN];
+
     // Define signal
     signal(SIGINT, handler);
     // Socket
