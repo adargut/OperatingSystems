@@ -148,5 +148,7 @@ int main(int argc, char * argv[]) {
     printf("# of printable characters: %u\n", serv_resp[0]);
     close(sockfd);
     fclose(file);
+    free(query);
+    free(send_buff);
     return 0;
 }
