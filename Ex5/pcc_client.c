@@ -48,12 +48,14 @@ int main(int argc, char * argv[]) {
     int sockfd = -1;
     int nread = -1;
     int bytes_sent = 0;
-    uint32_t N = 0;
     int port = atoi(argv[2]);
+
+    uint32_t N = 0;
+    uint32_t N_buff[10];
+
     char * ip = argv[1];
     char * path = argv[3];
     char * send_buff;
-    uint32_t N_buff[10];
     char serv_resp[1024] = {
             0
     };
@@ -61,8 +63,8 @@ int main(int argc, char * argv[]) {
 
     struct sockaddr_in serv_addr; // where we Want to get to
     struct sockaddr_in my_addr; // where we actually connected through
-    struct sockaddr_in peer_addr; // where we actually connected to
-    socklen_t addrsize = sizeof(struct sockaddr_in);
+    struct sockaddr_in peer_addr; // where we actually connected t
+
     UNUSED(peer_addr);
 
     if (argc != 4) {
@@ -70,22 +72,26 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    socklen_t addrsize = sizeof(struct sockaddr_in);
+
+    // Open file
     file = fopen(path, "rb");
     if (file == NULL) {
         printf("Error : Opening file failed \n");
         return 1;
     }
-
+    // Get file length and store in buffer
     N = get_file_length(file);
     N_buff[0] = N;
     send_buff = malloc(N);
 
+    // Create socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("\n Error : Could not create socket \n");
         return 1;
     }
 
-    // print socket details
+    // Get socket details
     getsockname(sockfd,
                 (struct sockaddr * ) & my_addr, & addrsize);
 
@@ -137,9 +143,8 @@ int main(int argc, char * argv[]) {
                      sizeof(serv_resp) - 1);
         if (nread > 0) break;
     }
-
+    // Close connection & print response
     printf("# of printable characters: %u\n", serv_resp[0]);
-
     close(sockfd);
     fclose(file);
     return 0;

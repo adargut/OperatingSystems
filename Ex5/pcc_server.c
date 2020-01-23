@@ -30,12 +30,12 @@
 #define RESP_LEN 256
 #define UNUSED(x)(void)(x)
 
-        static bool busy = false;
-        static unsigned int total_PCC[95] = {
-                0
-        };
+static bool busy = false;
+static unsigned int total_PCC[95] = {
+        0
+};
 
-                void handler(int sig) {
+void handler(int sig) {
     while (1) {
         if (!busy) {
             /*if server is not busy print the counters and exit with 0*/
@@ -69,11 +69,12 @@ int main(int argc, char * argv[]) {
         perror(strerror(errno));
         exit(1);
     }
+    // Set socket options
     memset( & serv_addr, 0, addrsize);
     int yes = 1;
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(yes));
-
+    // Set binding config
     serv_addr.sin_family = AF_INET;
     // INADDR_ANY = any local machine address
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
