@@ -95,6 +95,7 @@ int main(int argc, char * argv[]) {
     getsockname(sockfd,
                 (struct sockaddr * ) & my_addr, & addrsize);
 
+    // Set port/IP config
     memset( & serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port); // Note: htons for endiannes

@@ -98,8 +98,6 @@ int main(int argc, char * argv[]) {
 
     while (true) {
         // Accept a connection.
-        // Can use NULL in 2nd and 3rd arguments
-        // but we want to print the client socket details
         connfd = accept(listenfd,
                         (struct sockaddr * ) & peer_addr, & addrsize);
         busy = true;
@@ -108,11 +106,13 @@ int main(int argc, char * argv[]) {
             return 1;
         }
 
+        // Read N value from client
         nread = read(connfd,
                      N_buff,
                      4);
         uint32_t printable = 0;
 
+        // Read file from client
         while (true) {
             nread = read(connfd,
                          data_buff,
@@ -129,8 +129,9 @@ int main(int argc, char * argv[]) {
             break;
         }
 
+        // Set response
         serv_resp[0] = printable;
-
+        // Write response to client
         nread = write(connfd,
                       serv_resp,
                       sizeof(serv_resp) - 1);
