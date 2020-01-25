@@ -56,6 +56,16 @@ int main(int argc, char **argv)
     assert(page_table_query(pt, 0xcafe) == 0xf00d);
     page_table_update(pt, 0xcafe, NO_MAPPING);
     assert(page_table_query(pt, 0xcafe) == NO_MAPPING);
+    assert(page_table_query(pt, 0x0) == NO_MAPPING);
+    page_table_update(pt, 0x0, 0xcafe);
+    assert(page_table_query(pt, 0x0) == 0xcafe);
+
+    uint64_t pt2 = alloc_page_frame();
+    page_table_update(pt2, 0x0, 0xfa);
+    assert(page_table_query(pt2, 0x0) == 0xfa);
+
+    printf("Tests are done!\n");
 
     return 0;
 }
+

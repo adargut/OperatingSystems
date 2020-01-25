@@ -6,8 +6,12 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.c
+/home/adargut/Desktop/OS/OSClass/Ex1/os.c
 assert.h
+-
+time.h
+-
+execinfo.h
 -
 stdlib.h
 -
@@ -18,9 +22,11 @@ err.h
 sys/mman.h
 -
 os.h
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
+/home/adargut/Desktop/OS/OSClass/Ex1/os.h
+math.h
+/home/adargut/Desktop/OS/OSClass/Ex1/math.h
 
-C:/Users/Adar/CLionProjects/OSClass/Ex1/os.h
+/home/adargut/Desktop/OS/OSClass/Ex1/os.h
 stdint.h
 -
 
