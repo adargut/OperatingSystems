@@ -28,7 +28,9 @@
 
 #define UNUSED(x)(void)(x)
 
-// Util
+#define BUFF_LEN 1024
+
+// Util to get file length
 off_t get_file_length(FILE * file) {
     fpos_t position; // fpos_t may be a struct and store multibyte info
     off_t length; // off_t is integral type, perhaps long long
@@ -52,18 +54,17 @@ int main(int argc, char * argv[]) {
 
     uint32_t N = 0;
     uint32_t N_buff[10];
+    uint32_t serv_resp[2] = {0};
 
     char * ip = argv[1];
     char * path = argv[3];
     char * send_buff;
-    char serv_resp[1024] = {
-            0
-    };
+
     FILE * file;
 
-    struct sockaddr_in serv_addr; // where we Want to get to
-    struct sockaddr_in my_addr; // where we actually connected through
-    struct sockaddr_in peer_addr; // where we actually connected t
+    struct sockaddr_in serv_addr; // dst identifier
+    struct sockaddr_in my_addr; // src identifier
+    struct sockaddr_in peer_addr; // actual connection tuple
 
     UNUSED(peer_addr);
 
@@ -72,6 +73,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    // Initialize address
     socklen_t addrsize = sizeof(struct sockaddr_in);
 
     // Open file
@@ -80,6 +82,7 @@ int main(int argc, char * argv[]) {
         printf("Error : Opening file failed \n");
         return 1;
     }
+
     // Get file length and store in buffer
     N = get_file_length(file);
     N_buff[0] = N;
@@ -109,19 +112,23 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    int notwritten = N;
-
     // Write N from client to server
     bytes_sent = write(sockfd,
                        N_buff,
-                       4);
-    char * query = malloc(CHAR_MAX);
+                       sizeof(int));
+
+    char * query = malloc(N);
     int j = 0;
-    while (fgets(send_buff, 1024, file) != NULL) {
+
+    // Put file into buffer
+    while (fgets(send_buff, BUFF_LEN, file) != NULL) {
         for (int i = 0; i < strlen(send_buff); i++) {
             query[j++] = send_buff[i];
         }
     }
+
+    // We want to write N bytes, size of file
+    int notwritten = N;
 
     // Write message from client to server
     while (notwritten > 0) {
@@ -131,8 +138,6 @@ int main(int argc, char * argv[]) {
         bytes_sent = write(sockfd,
                            query + totalsent,
                            notwritten);
-        // check if error occured (client closed connection?)
-        assert(bytes_sent >= 0);
         totalsent += bytes_sent;
         notwritten -= bytes_sent;
     }
@@ -144,6 +149,7 @@ int main(int argc, char * argv[]) {
                      sizeof(serv_resp) - 1);
         if (nread > 0) break;
     }
+
     // Close connection & print response
     printf("# of printable characters: %u\n", serv_resp[0]);
     close(sockfd);
